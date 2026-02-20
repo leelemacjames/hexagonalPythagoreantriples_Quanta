@@ -1,0 +1,1316 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>The Hexagonal Pythagorean Theorem</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;0,700;1,400;1,600&family=IBM+Plex+Sans:ital,wght@0,300;0,400;0,500;0,600;1,400&family=Fira+Code:wght@400;500&display=swap');
+
+  :root {
+    --bg: #0a0f0d;
+    --bg-elevated: #111a16;
+    --bg-card: #182420;
+    --text: #dce8e3;
+    --text-dim: #94b0a5;
+    --text-muted: #5e7d70;
+    --cyan: #22d3ee;
+    --cyan-dim: #0891b2;
+    --teal: #2dd4bf;
+    --emerald: #34d399;
+    --green: #4ade80;
+    --amber: #fbbf24;
+    --rose: #fb7185;
+    --violet: #a78bfa;
+    --sky: #38bdf8;
+    --border: #1e3a2f;
+    --border-light: #2d4f40;
+    --serif: 'Cormorant Garamond', Georgia, serif;
+    --sans: 'IBM Plex Sans', sans-serif;
+    --mono: 'Fira Code', monospace;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: var(--sans);
+    font-size: 17px;
+    font-weight: 300;
+    line-height: 1.8;
+    overflow-x: hidden;
+  }
+
+  /* ─── Hero ─── */
+  .hero {
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+    padding: 2rem;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .hero::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background:
+      radial-gradient(ellipse 70% 50% at 50% 45%, rgba(34,211,238,0.07) 0%, transparent 70%),
+      radial-gradient(ellipse 50% 35% at 65% 65%, rgba(45,212,191,0.04) 0%, transparent 60%);
+    pointer-events: none;
+  }
+
+  /* Hexagonal grid background */
+  .hex-bg {
+    position: absolute;
+    inset: 0;
+    overflow: hidden;
+    pointer-events: none;
+    opacity: 0.04;
+  }
+
+  .hex-bg svg { width: 100%; height: 100%; }
+
+  .hero-label {
+    font-family: var(--mono);
+    font-size: 0.72rem;
+    letter-spacing: 0.25em;
+    text-transform: uppercase;
+    color: var(--cyan);
+    margin-bottom: 2rem;
+    opacity: 0;
+    animation: fadeUp 0.8s 0.3s forwards;
+  }
+
+  .hero h1 {
+    font-family: var(--serif);
+    font-size: clamp(2.8rem, 7vw, 5.5rem);
+    font-weight: 700;
+    line-height: 1.06;
+    max-width: 16ch;
+    background: linear-gradient(135deg, var(--text) 0%, var(--cyan) 45%, var(--teal) 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    opacity: 0;
+    animation: fadeUp 1s 0.5s forwards;
+  }
+
+  .hero-sub {
+    font-family: var(--sans);
+    font-size: 1.15rem;
+    font-weight: 300;
+    color: var(--text-dim);
+    max-width: 55ch;
+    margin-top: 1.5rem;
+    font-style: italic;
+    opacity: 0;
+    animation: fadeUp 0.8s 0.9s forwards;
+  }
+
+  .hero-meta {
+    font-family: var(--mono);
+    font-size: 0.78rem;
+    color: var(--text-muted);
+    margin-top: 2.5rem;
+    opacity: 0;
+    animation: fadeUp 0.8s 1.2s forwards;
+  }
+
+  .hero-meta a {
+    color: var(--cyan);
+    text-decoration: none;
+    border-bottom: 1px solid var(--cyan-dim);
+    transition: border-color 0.2s;
+  }
+  .hero-meta a:hover { border-color: var(--cyan); }
+
+  .scroll-hint {
+    position: absolute;
+    bottom: 2rem;
+    left: 50%;
+    transform: translateX(-50%);
+    font-family: var(--mono);
+    font-size: 0.68rem;
+    color: var(--text-muted);
+    letter-spacing: 0.18em;
+    opacity: 0;
+    animation: fadeUp 0.6s 1.8s forwards, pulse 2.5s 2.5s infinite;
+  }
+  .scroll-hint::after { content: '↓'; display: block; text-align: center; margin-top: 0.3rem; font-size: 1rem; }
+
+  /* ─── Sections ─── */
+  .section {
+    max-width: 700px;
+    margin: 0 auto;
+    padding: 4rem 2rem;
+    opacity: 0;
+    transform: translateY(30px);
+    transition: opacity 0.8s ease, transform 0.8s ease;
+  }
+  .section.visible { opacity: 1; transform: translateY(0); }
+
+  .section-wide {
+    max-width: 960px;
+    margin: 0 auto;
+    padding: 4rem 2rem;
+    opacity: 0;
+    transform: translateY(30px);
+    transition: opacity 0.8s ease, transform 0.8s ease;
+  }
+  .section-wide.visible { opacity: 1; transform: translateY(0); }
+
+  h2 {
+    font-family: var(--serif);
+    font-size: clamp(1.8rem, 4vw, 2.8rem);
+    font-weight: 700;
+    margin-bottom: 1.5rem;
+    line-height: 1.15;
+    color: var(--text);
+  }
+
+  h3 {
+    font-family: var(--serif);
+    font-size: 1.4rem;
+    font-weight: 600;
+    margin: 2rem 0 0.75rem;
+    color: var(--teal);
+  }
+
+  p { margin-bottom: 1.25rem; }
+  .lead { font-size: 1.15rem; line-height: 1.85; }
+  strong { color: var(--cyan); font-weight: 500; }
+  em { font-style: italic; }
+
+  /* ─── Math blocks ─── */
+  .math-block {
+    background: var(--bg-elevated);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 2rem;
+    margin: 2rem 0;
+    text-align: center;
+    font-family: var(--mono);
+    font-size: 1.05rem;
+    line-height: 2;
+    position: relative;
+    overflow: hidden;
+  }
+  .math-block::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, var(--cyan), transparent);
+  }
+
+  .math-label {
+    font-family: var(--mono);
+    font-size: 0.68rem;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--cyan);
+    margin-bottom: 1rem;
+  }
+
+  .math-big { font-size: 1.4rem; color: var(--teal); font-weight: 500; }
+
+  .frac { display: inline-flex; flex-direction: column; align-items: center; vertical-align: middle; margin: 0 0.15em; }
+  .frac-num { border-bottom: 1.5px solid var(--text-dim); padding: 0 0.3em 0.15em; font-size: 0.9em; }
+  .frac-den { padding: 0.15em 0.3em 0; font-size: 0.9em; }
+
+  /* ─── Highlight boxes ─── */
+  .highlight-box {
+    background: var(--bg-elevated);
+    border-left: 3px solid var(--cyan);
+    padding: 1.5rem 2rem;
+    margin: 2rem 0;
+    border-radius: 0 8px 8px 0;
+  }
+  .highlight-box.teal { border-left-color: var(--teal); }
+  .highlight-box.emerald { border-left-color: var(--emerald); }
+  .highlight-box.amber { border-left-color: var(--amber); }
+  .highlight-box.rose { border-left-color: var(--rose); }
+  .highlight-box.violet { border-left-color: var(--violet); }
+
+  /* ─── Pullquote ─── */
+  .pullquote {
+    font-family: var(--serif);
+    font-size: clamp(1.4rem, 3vw, 2rem);
+    font-style: italic;
+    color: var(--teal);
+    text-align: center;
+    padding: 3rem 2rem;
+    max-width: 700px;
+    margin: 0 auto;
+    line-height: 1.4;
+    position: relative;
+    opacity: 0;
+    transform: translateY(20px);
+    transition: opacity 0.8s, transform 0.8s;
+  }
+  .pullquote.visible { opacity: 1; transform: translateY(0); }
+  .pullquote::before, .pullquote::after {
+    content: '';
+    position: absolute;
+    left: 20%; right: 20%;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, var(--teal), transparent);
+    opacity: 0.3;
+  }
+  .pullquote::before { top: 0; }
+  .pullquote::after { bottom: 0; }
+
+  /* ─── Comparison table ─── */
+  .comp-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-family: var(--mono);
+    font-size: 0.82rem;
+    margin: 2rem 0;
+  }
+  .comp-table thead { background: var(--bg-card); }
+  .comp-table th {
+    padding: 0.75rem 1rem;
+    text-align: left;
+    font-weight: 500;
+    color: var(--text-dim);
+    border-bottom: 1px solid var(--border);
+  }
+  .comp-table td {
+    padding: 0.6rem 1rem;
+    border-bottom: 1px solid rgba(30,58,47,0.5);
+    color: var(--text-dim);
+  }
+  .comp-table tr:hover td { background: rgba(34,211,238,0.02); }
+  .comp-table .col-gauss { color: var(--amber); }
+  .comp-table .col-eisen { color: var(--cyan); }
+
+  /* ─── Interactive triple explorer ─── */
+  .explorer {
+    background: var(--bg-elevated);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 2rem;
+    margin: 2rem 0;
+  }
+
+  .explorer-controls {
+    display: flex;
+    gap: 1.5rem;
+    align-items: center;
+    justify-content: center;
+    flex-wrap: wrap;
+    margin-bottom: 1.5rem;
+  }
+
+  .ctrl-group {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-family: var(--mono);
+    font-size: 0.85rem;
+    color: var(--text-dim);
+  }
+
+  .ctrl-group input[type="range"] {
+    -webkit-appearance: none;
+    width: 100px;
+    height: 4px;
+    background: var(--border);
+    border-radius: 2px;
+    outline: none;
+  }
+  .ctrl-group input[type="range"]::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    width: 14px; height: 14px;
+    background: var(--cyan);
+    border-radius: 50%;
+    cursor: pointer;
+  }
+
+  .val-display { color: var(--cyan); min-width: 2ch; text-align: right; font-weight: 500; }
+
+  .triple-result {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+    gap: 1rem;
+    margin-top: 1.5rem;
+  }
+
+  .triple-card {
+    background: rgba(0,0,0,0.3);
+    border-radius: 10px;
+    padding: 1rem;
+    text-align: center;
+    transition: transform 0.2s;
+  }
+  .triple-card:hover { transform: translateY(-2px); }
+
+  .triple-label {
+    font-family: var(--mono);
+    font-size: 0.68rem;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--text-muted);
+    margin-bottom: 0.4rem;
+  }
+  .triple-val {
+    font-family: var(--mono);
+    font-size: 1.5rem;
+    font-weight: 500;
+  }
+  .triple-sub {
+    font-family: var(--mono);
+    font-size: 0.72rem;
+    color: var(--text-muted);
+    margin-top: 0.25rem;
+  }
+
+  /* ─── Classification badge ─── */
+  .badge {
+    display: inline-block;
+    font-family: var(--mono);
+    font-size: 0.68rem;
+    letter-spacing: 0.08em;
+    padding: 0.2em 0.7em;
+    border-radius: 4px;
+    font-weight: 500;
+  }
+  .badge-ctrim { background: rgba(34,211,238,0.15); color: var(--cyan); }
+  .badge-conj { background: rgba(167,139,250,0.15); color: var(--violet); }
+  .badge-ntrim { background: rgba(251,113,133,0.15); color: var(--rose); }
+
+  /* ─── Sieve visualisation ─── */
+  .sieve-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, 28px);
+    gap: 3px;
+    justify-content: center;
+    margin: 2rem 0;
+    max-width: 600px;
+    margin-left: auto;
+    margin-right: auto;
+  }
+
+  .sieve-cell {
+    width: 28px;
+    height: 28px;
+    border-radius: 4px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: var(--mono);
+    font-size: 0.55rem;
+    color: rgba(255,255,255,0.5);
+    cursor: default;
+    transition: transform 0.15s;
+    position: relative;
+  }
+  .sieve-cell:hover { transform: scale(1.3); z-index: 2; }
+  .sieve-cell.ctrim { background: rgba(34,211,238,0.25); color: var(--cyan); }
+  .sieve-cell.conj { background: rgba(167,139,250,0.25); color: var(--violet); }
+  .sieve-cell.ntrim { background: rgba(251,113,133,0.2); color: var(--rose); }
+  .sieve-cell.invalid { background: rgba(255,255,255,0.02); color: rgba(255,255,255,0.1); }
+
+  .sieve-legend {
+    display: flex;
+    gap: 1.5rem;
+    justify-content: center;
+    font-family: var(--mono);
+    font-size: 0.75rem;
+    margin-top: 1rem;
+    flex-wrap: wrap;
+  }
+  .sieve-legend-item { display: flex; align-items: center; gap: 0.4rem; }
+  .sieve-legend-dot { width: 10px; height: 10px; border-radius: 3px; }
+
+  /* ─── Animated comparison cards ─── */
+  .comparison {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1.5rem;
+    margin: 2rem 0;
+  }
+  @media (max-width: 640px) { .comparison { grid-template-columns: 1fr; } }
+
+  .comp-card {
+    background: var(--bg-elevated);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 1.5rem;
+    position: relative;
+    overflow: hidden;
+    opacity: 0;
+    transition: opacity 0.7s ease, transform 0.7s ease;
+  }
+  .comp-card.from-left { transform: translateX(-40px); }
+  .comp-card.from-right { transform: translateX(40px); }
+  .comp-card.revealed { opacity: 1; transform: translateX(0); }
+
+  .comp-card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 3px;
+  }
+  .comp-card.card-gauss::before { background: linear-gradient(90deg, var(--amber), #f59e0b); }
+  .comp-card.card-eisen::before { background: linear-gradient(90deg, var(--cyan), var(--teal)); }
+
+  .comp-card h4 { font-family: var(--serif); font-size: 1.15rem; font-weight: 600; margin-bottom: 0.75rem; }
+
+  .comp-formula {
+    font-family: var(--mono);
+    font-size: 0.92rem;
+    margin: 0.75rem 0;
+    padding: 0.75rem;
+    background: rgba(0,0,0,0.3);
+    border-radius: 6px;
+    text-align: center;
+  }
+
+  .comp-list {
+    list-style: none;
+    padding: 0;
+    font-size: 0.88rem;
+    color: var(--text-dim);
+  }
+  .comp-list li {
+    padding: 0.3rem 0;
+    padding-left: 1.2em;
+    text-indent: -1.2em;
+    opacity: 0;
+    transform: translateY(8px);
+    transition: opacity 0.4s ease, transform 0.4s ease;
+  }
+  .comp-card.revealed .comp-list li { opacity: 1; transform: translateY(0); }
+  .comp-card.revealed .comp-list li:nth-child(1) { transition-delay: 0.25s; }
+  .comp-card.revealed .comp-list li:nth-child(2) { transition-delay: 0.4s; }
+  .comp-card.revealed .comp-list li:nth-child(3) { transition-delay: 0.55s; }
+  .comp-card.revealed .comp-list li:nth-child(4) { transition-delay: 0.7s; }
+  .comp-card.revealed .comp-list li:nth-child(5) { transition-delay: 0.85s; }
+  .comp-list li::before { content: '→ '; color: var(--text-muted); }
+
+  /* ─── Three-class cards ─── */
+  .tri-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1rem;
+    margin: 2rem 0;
+  }
+  @media (max-width: 700px) { .tri-grid { grid-template-columns: 1fr; } }
+
+  .tri-card {
+    background: var(--bg-elevated);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 1.5rem;
+    text-align: center;
+    opacity: 0;
+    transform: translateY(20px);
+    transition: opacity 0.5s ease, transform 0.5s ease;
+  }
+  .tri-card.revealed { opacity: 1; transform: translateY(0); }
+  .tri-card:nth-child(1) { transition-delay: 0s; }
+  .tri-card:nth-child(2) { transition-delay: 0.15s; }
+  .tri-card:nth-child(3) { transition-delay: 0.3s; }
+
+  .tri-card h4 { font-family: var(--serif); font-size: 1.1rem; margin-bottom: 0.5rem; }
+  .tri-card .tri-condition {
+    font-family: var(--mono);
+    font-size: 0.85rem;
+    padding: 0.5rem;
+    background: rgba(0,0,0,0.3);
+    border-radius: 6px;
+    margin: 0.75rem 0;
+  }
+  .tri-card p { font-size: 0.88rem; color: var(--text-dim); margin: 0; }
+
+  /* ─── Unifying principle box ─── */
+  .unify-box {
+    background: linear-gradient(135deg, rgba(34,211,238,0.06), rgba(45,212,191,0.04));
+    border: 1px solid rgba(34,211,238,0.2);
+    border-radius: 16px;
+    padding: 2.5rem;
+    margin: 2rem 0;
+    position: relative;
+  }
+  .unify-box h3 { color: var(--cyan); margin-top: 0; }
+  .unify-tag {
+    font-family: var(--mono);
+    font-size: 0.63rem;
+    letter-spacing: 0.22em;
+    text-transform: uppercase;
+    color: var(--cyan);
+    background: rgba(34,211,238,0.12);
+    padding: 0.2em 0.8em;
+    border-radius: 4px;
+    display: inline-block;
+    margin-bottom: 1rem;
+  }
+
+  /* ─── Data table ─── */
+  .data-table-wrap {
+    overflow-x: auto;
+    margin: 2rem 0;
+    border-radius: 12px;
+    border: 1px solid var(--border);
+  }
+  .data-table { width: 100%; border-collapse: collapse; font-family: var(--mono); font-size: 0.8rem; }
+  .data-table thead { background: var(--bg-card); }
+  .data-table th { padding: 0.7rem 0.8rem; text-align: right; font-weight: 500; color: var(--text-dim); border-bottom: 1px solid var(--border); }
+  .data-table th:first-child, .data-table th:nth-child(2) { text-align: center; }
+  .data-table td { padding: 0.55rem 0.8rem; text-align: right; border-bottom: 1px solid rgba(30,58,47,0.4); }
+  .data-table td:first-child, .data-table td:nth-child(2) { text-align: center; color: var(--text-muted); }
+  .data-table tr:hover td { background: rgba(34,211,238,0.02); }
+
+  /* ─── Canvas for hexagonal lattice ─── */
+  .lattice-container {
+    background: var(--bg-elevated);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 1.5rem;
+    margin: 2rem 0;
+    position: relative;
+    overflow: hidden;
+  }
+  .lattice-container::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(ellipse at 50% 50%, rgba(34,211,238,0.02), transparent 70%);
+    pointer-events: none;
+  }
+
+  canvas { display: block; }
+
+  /* ─── Footer ─── */
+  footer {
+    max-width: 700px;
+    margin: 0 auto;
+    padding: 4rem 2rem;
+    border-top: 1px solid var(--border);
+    font-size: 0.82rem;
+    color: var(--text-muted);
+  }
+  footer a { color: var(--cyan); text-decoration: none; }
+  footer a:hover { text-decoration: underline; }
+
+  /* ─── Animations ─── */
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+  @keyframes pulse {
+    0%, 100% { opacity: 0.3; }
+    50% { opacity: 0.7; }
+  }
+
+  code {
+    font-family: var(--mono);
+    font-size: 0.83em;
+    background: var(--bg-card);
+    padding: 0.12em 0.4em;
+    border-radius: 4px;
+    color: var(--teal);
+  }
+
+  .nowrap { white-space: nowrap; }
+</style>
+</head>
+<body>
+
+<!-- ═══════ HERO ═══════ -->
+<section class="hero">
+  <div class="hex-bg" id="hexBg"></div>
+  <div class="hero-label">Algebraic Number Theory × Geometry</div>
+  <h1>The Hexagonal Pythagorean Theorem</h1>
+  <p class="hero-sub">
+    The Pythagorean equation has a twin, living on the hexagonal lattice.
+    Its solutions split into exactly three classes — and the reason reaches
+    all the way to quadratic reciprocity.
+  </p>
+  <p class="hero-meta">Lee McCulloch-James · Dwight School London · February 2026</p>
+  <p class="hero-meta" style="margin-top:0.5rem">
+    <a href="https://www.researchgate.net/publication/389513781_Eisenstein-Pythagorean_Triples_A_Parity_Classification_on_the_Hexagonal_Lattice" target="_blank">Read the paper on ResearchGate ↗</a> · <span style="color:var(--text-muted)">DOI: 10.13140/RG.2.2.29669.67047</span>
+  </p>
+  <div class="scroll-hint">SCROLL TO EXPLORE</div>
+</section>
+
+<!-- ═══════ ACT 1: TWO LATTICES ═══════ -->
+<section class="section" data-anim>
+  <h2>Two lattices, two equations</h2>
+  <p class="lead">
+    The Pythagorean equation <code>x² + y² = z²</code> lives on the square lattice of the Gaussian integers
+    ℤ[i]. Every primitive solution comes from squaring a Gaussian integer: (p + qi)² gives the triple
+    (p² − q², 2pq, p² + q²). The parity condition <strong>p ≢ q (mod 2)</strong> ensures coprimality.
+  </p>
+  <p>
+    But the square lattice isn't the only game in town. The plane admits exactly <em>two</em> regular lattices
+    with a Euclidean domain: the square lattice (ℤ[i]) and the <strong>hexagonal lattice</strong> (ℤ[ω]),
+    where ω = e<sup>2πi/3</sup>. Moving to the hexagonal lattice transforms the norm form from
+    a² + b² to <strong>a² − ab + b²</strong>, and the Pythagorean equation becomes:
+  </p>
+
+  <div class="math-block">
+    <div class="math-label">The Eisenstein–Pythagorean Equation</div>
+    <div class="math-big">a² − ab + b² = c²</div>
+  </div>
+
+  <p>
+    The change of sign — from +ab to −ab — reflects the angle change from 90° to 120°.
+    The solutions are <strong>Eisenstein–Pythagorean triples</strong>, and their structure
+    is richer than the classical case in every way.
+  </p>
+</section>
+
+<div class="pullquote" data-anim>
+  The square and hexagonal lattices are the only two regular lattices<br>
+  admitting a Euclidean domain with nontrivial rotational symmetry.
+</div>
+
+<!-- ═══════ ACT 2: THE SQUARING PRINCIPLE ═══════ -->
+<section class="section" data-anim>
+  <h2>Squaring on the hexagonal lattice</h2>
+  <p>
+    Just as Pythagorean triples come from squaring Gaussian integers, Eisenstein–Pythagorean triples
+    come from squaring Eisenstein integers. If γ = m + nω with gcd(m,n) = 1 and m > n > 0, then:
+  </p>
+
+  <div class="math-block">
+    <div class="math-label">Eisenstein Squaring Principle</div>
+    <div class="math-big">(m + nω)² → (a, b, c)</div>
+    <div style="margin-top:0.75rem; font-size:0.88rem; color:var(--text-dim)">
+      a = m² − n² &nbsp;&nbsp; b = n(2m − n) &nbsp;&nbsp; c = m² − mn + n²
+    </div>
+  </div>
+
+  <p>
+    The triple satisfies a² − ab + b² = c² automatically, because c = N<sub>ρ</sub>(γ) is the Eisenstein norm,
+    and N(γ²) = N(γ)² = c².
+  </p>
+
+  <div class="highlight-box teal">
+    <strong>The moral is identical to the Gaussian case:</strong> Eisenstein–Pythagorean triples
+    are norms of squares of Eisenstein integers. But the classification of which triples are primitive
+    is governed by a <em>ternary</em> condition, not a binary one — because the ramified prime
+    has norm 3, not 2.
+  </div>
+</section>
+
+<!-- ═══════ ACT 3: INTERACTIVE EXPLORER ═══════ -->
+<section class="section-wide" data-anim>
+  <h2>Explore the triples</h2>
+  <p style="max-width:700px">
+    Pick generator values m and n (with m > n > 0 and gcd(m,n) = 1) and see the resulting
+    Eisenstein–Pythagorean triple, its classification, and conjugate.
+  </p>
+
+  <div class="explorer">
+    <div class="explorer-controls">
+      <div class="ctrl-group">
+        <label>m =</label>
+        <input type="range" id="mSlider" min="2" max="20" value="5" step="1">
+        <span class="val-display" id="mVal">5</span>
+      </div>
+      <div class="ctrl-group">
+        <label>n =</label>
+        <input type="range" id="nSlider" min="1" max="19" value="2" step="1">
+        <span class="val-display" id="nVal">2</span>
+      </div>
+      <div class="ctrl-group" id="coprimeWarning" style="color:var(--rose); display:none">
+        gcd(m,n) ≠ 1
+      </div>
+    </div>
+    <div class="triple-result" id="tripleResult"></div>
+  </div>
+</section>
+
+<!-- ═══════ ACT 4: THE THREE CLASSES ═══════ -->
+<section class="section" data-anim>
+  <h2>Three classes, not two</h2>
+  <p>
+    In the Gaussian case, parity is binary: p and q are either the same parity (even triple) or
+    different (primitive triple). Two classes. In the Eisenstein case, the "even prime" is
+    β = 1 − ω with norm <strong>3</strong>, so the quotient ring ℤ[ω]/⟨β⟩ has <em>three</em>
+    residue classes — isomorphic to ℤ₃ — giving a ternary parity:
+  </p>
+
+  <div class="highlight-box">
+    <strong>Eisenstein Parity (Hadi et al.):</strong> For γ = m + nω, the residue class (m + n) mod 3
+    determines parity: <span class="nowrap">0 → even,</span> <span class="nowrap">1 → odd-1,</span>
+    <span class="nowrap">2 → odd-2.</span>
+  </div>
+
+  <p>
+    This ternary parity completely governs which triples are primitive, and within the primitive class,
+    conjugation symmetry (γ ↔ γ̄) creates a canonical/conjugate distinction.
+    The result is a <strong>three-way partition</strong>:
+  </p>
+
+  <div class="tri-grid" id="triGrid">
+    <div class="tri-card" data-reveal-card>
+      <h4 style="color:var(--rose)">Non-primitive</h4>
+      <div class="tri-condition" style="color:var(--rose)">m + n ≡ 0 (mod 3)</div>
+      <p>gcd(a, b, c) = 3. The generator γ is "even" — divisible by β = 1−ω.</p>
+    </div>
+    <div class="tri-card" data-reveal-card>
+      <h4 style="color:var(--cyan)">Canonical Primitive</h4>
+      <div class="tri-condition" style="color:var(--cyan)">m + n ≢ 0, m > 2n</div>
+      <p>gcd(a, b, c) = 1 with a > b. The natural representative of the conjugate pair.</p>
+    </div>
+    <div class="tri-card" data-reveal-card>
+      <h4 style="color:var(--violet)">Conjugate Primitive</h4>
+      <div class="tri-condition" style="color:var(--violet)">m + n ≢ 0, m < 2n</div>
+      <p>gcd(a, b, c) = 1 with a < b. The a ↔ b mirror of a canonical triple.</p>
+    </div>
+  </div>
+
+  <p>
+    Each class contains asymptotically <strong>one-third</strong> of all coprime parameter pairs.
+    The boundary m = 2n (where a = b) forces m + n = 3n ≡ 0 (mod 3), so it falls into the non-primitive
+    class. This means <em>no self-conjugate primitive triple exists</em>.
+  </p>
+</section>
+
+<div class="pullquote" data-anim>
+  No primitive Eisenstein–Pythagorean triple has a = b.<br>
+  The boundary is necessarily non-primitive.
+</div>
+
+<!-- ═══════ ACT 5: THE SIEVE ═══════ -->
+<section class="section-wide" data-anim>
+  <h2>The parameter sieve</h2>
+  <p style="max-width:700px">
+    Each cell below represents a coprime pair (m, n) with m > n > 0.
+    The colour shows its classification — determined entirely by (m + n) mod 3 and the ratio m : 2n.
+    Hover to see the triple.
+  </p>
+
+  <div id="sieveContainer"></div>
+
+  <div class="sieve-legend">
+    <div class="sieve-legend-item"><div class="sieve-legend-dot" style="background:rgba(34,211,238,0.4)"></div> Canonical (a > b)</div>
+    <div class="sieve-legend-item"><div class="sieve-legend-dot" style="background:rgba(167,139,250,0.4)"></div> Conjugate (a < b)</div>
+    <div class="sieve-legend-item"><div class="sieve-legend-dot" style="background:rgba(251,113,133,0.35)"></div> Non-primitive</div>
+    <div class="sieve-legend-item"><div class="sieve-legend-dot" style="background:rgba(255,255,255,0.05)"></div> gcd ≠ 1</div>
+  </div>
+</section>
+
+<!-- ═══════ ACT 6: THE DATA ═══════ -->
+<section class="section" data-anim>
+  <h2>Classification table</h2>
+  <p>The first Eisenstein–Pythagorean triples, sorted by class. Conjugate pairs share the same c-value.</p>
+  <div id="classTable"></div>
+</section>
+
+<!-- ═══════ ACT 7: WHY PARITY WORKS ═══════ -->
+<section class="section" data-anim>
+  <h2>Why parity governs primitivity</h2>
+  <p>
+    The key algebraic fact (Hadi et al., Proposition 1): for γ = m + nω with gcd(m,n) = 1,
+    the gcd of γ with its conjugate γ̄ is either 1 (if γ is odd) or β (if γ is even).
+    When γ is even:
+  </p>
+
+  <div class="highlight-box rose">
+    β | γ and β | γ̄, so β² | γ². Since β² = −3ω, this means <strong>3 divides both a and b</strong>.
+    And β² | γγ̄ = c, so <strong>3 | c</strong>. Hence gcd(a,b,c) = 3.
+  </div>
+
+  <p>
+    When γ is odd, gcd(γ, γ̄) = 1. Any prime dividing gcd(a,b,c) would divide both γ² and γγ̄,
+    hence would divide gcd(γ, γ̄)² = 1. Contradiction. So gcd(a,b,c) = 1.
+  </p>
+
+  <div class="highlight-box teal">
+    <strong>Parity multiplication collapses under squaring:</strong> both Odd-1 and Odd-2 generators
+    square to Odd-1 outputs. This is why every primitive triple satisfies a + b ≡ 1 (mod 3) —
+    the two odd fibres merge after squaring.
+  </div>
+</section>
+
+<!-- ═══════ ACT 8: GAUSSIAN VS EISENSTEIN ═══════ -->
+<section class="section" data-anim id="compSection">
+  <h2>Square meets hexagon</h2>
+  <p>The two theories are structurally parallel at every level. The question is: <em>why?</em></p>
+
+  <div class="comparison">
+    <div class="comp-card card-gauss from-left" data-reveal>
+      <h4 style="color:var(--amber)">Gaussian ℤ[i]</h4>
+      <div class="comp-formula" style="color:var(--amber)">a² + b² = c²</div>
+      <ul class="comp-list">
+        <li>Square lattice, 4-fold symmetry</li>
+        <li>Even prime: 1 + i, norm 2</li>
+        <li>Binary parity: ℤ[i]/⟨1+i⟩ ≅ ℤ₂</li>
+        <li>Primitivity: p ≢ q (mod 2)</li>
+        <li>Valid c: primes ≡ 1 (mod 4)</li>
+      </ul>
+    </div>
+    <div class="comp-card card-eisen from-right" data-reveal>
+      <h4 style="color:var(--cyan)">Eisenstein ℤ[ω]</h4>
+      <div class="comp-formula" style="color:var(--cyan)">a² − ab + b² = c²</div>
+      <ul class="comp-list">
+        <li>Hexagonal lattice, 6-fold symmetry</li>
+        <li>Even prime: 1 − ω, norm 3</li>
+        <li>Ternary parity: ℤ[ω]/⟨1−ω⟩ ≅ ℤ₃</li>
+        <li>Primitivity: m + n ≢ 0 (mod 3)</li>
+        <li>Valid c: primes ≡ 1 (mod 3)</li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<div class="pullquote" data-anim>
+  The mod-2 condition and the mod-3 condition<br>
+  are two instances of the same theorem.
+</div>
+
+<!-- ═══════ ACT 9: THE UNIFYING PRINCIPLE ═══════ -->
+<section class="section" data-anim>
+  <h2>One framework, two manifestations</h2>
+  <p>
+    The parallel is not coincidence. Both theories are governed by the same pair of arithmetic principles,
+    operating in different imaginary quadratic fields:
+  </p>
+
+  <div class="unify-box">
+    <div class="unify-tag">The Unifying Framework</div>
+    <h3>Two principles</h3>
+    <p>
+      <strong>Representability</strong> — which primes can appear as c? — is controlled by <em>splitting</em>,
+      determined by quadratic reciprocity. A prime p is representable by the norm form iff p splits
+      or ramifies in O<sub>K</sub>.
+    </p>
+    <p>
+      <strong>Primitivity</strong> — when is the triple coprime? — is controlled by <em>ramification</em>.
+      Reduction modulo the ramified prime 𝔭 gives O<sub>K</sub>/𝔭 ≅ ℤ<sub>p</sub>.
+      The generator's residue class — its "parity" — determines coprimality:
+    </p>
+    <div class="math-block" style="margin:1.5rem 0 0.5rem">
+      <div class="math-big">Primitive triple ⟺ [γ] ≠ 0 in O<sub>K</sub>/𝔭</div>
+    </div>
+    <p class="dim" style="margin-bottom:0; margin-top:1rem">
+      Gaussian: 𝔭 = (1+i), p = 2, binary parity. Eisenstein: 𝔭 = (1−ω), p = 3, ternary parity.
+      Same principle, different ramified prime.
+    </p>
+  </div>
+
+  <p>
+    Splitting behaviour comes from quadratic reciprocity applied to the discriminant:
+    (−1/p) for ℚ(√−1), giving p ≡ 1 (mod 4);
+    (−3/p) for ℚ(√−3), giving p ≡ 1 (mod 3).
+    Fermat's two-square theorem and its Eisenstein analogue are thus <em>the same theorem</em>,
+    specialised to the two exceptional imaginary quadratic fields with class number 1 and
+    extra units.
+  </p>
+</section>
+
+<!-- ═══════ ACT 10: SIX-FOLD SYMMETRY ═══════ -->
+<section class="section-wide" data-anim>
+  <h2>The six-fold symmetry</h2>
+  <p style="max-width:700px">
+    The unit group of ℤ[ω] is {±1, ±ω, ±ω²} — six elements, corresponding to 60° rotations.
+    Every triple (a, b, c) has an orbit of six images under unit multiplication, all with the same c.
+    For (8, 5, 7), the orbit includes (5, 3, 7) and (3, 8, 7) among the positive representatives.
+  </p>
+
+  <div class="lattice-container">
+    <canvas id="hexCanvas" width="800" height="450" style="width:100%; height:auto;"></canvas>
+  </div>
+  <p class="dim" style="text-align:center; font-size:0.82rem; max-width:700px; margin:0.5rem auto 0">
+    The six images of (8,5)/7 on the Eisenstein unit ellipse X² − XY + Y² = 1.
+    The hexagonal symmetry of the lattice metric makes these six points equidistant in norm.
+  </p>
+</section>
+
+<!-- ═══════ ACT 11: VALID HYPOTENUSE ═══════ -->
+<section class="section" data-anim>
+  <h2>Which primes can be c?</h2>
+  <p>
+    The representability principle makes this precise. A prime p can appear as the hypotenuse c in a
+    primitive triple iff it's representable by the norm form — iff it splits or ramifies.
+  </p>
+
+  <div class="data-table-wrap">
+    <table class="comp-table">
+      <thead>
+        <tr><th></th><th class="col-gauss">Gaussian</th><th class="col-eisen">Eisenstein</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>Field</td><td class="col-gauss">ℚ(√−1)</td><td class="col-eisen">ℚ(√−3)</td></tr>
+        <tr><td>Ramified</td><td class="col-gauss">p = 2</td><td class="col-eisen">p = 3</td></tr>
+        <tr><td>Splits</td><td class="col-gauss">p ≡ 1 (mod 4)</td><td class="col-eisen">p ≡ 1 (mod 3)</td></tr>
+        <tr><td>Inert</td><td class="col-gauss">p ≡ 3 (mod 4)</td><td class="col-eisen">p ≡ 2 (mod 3)</td></tr>
+        <tr><td>Valid c</td><td class="col-gauss">2, 5, 13, 17, 25, 29 …</td><td class="col-eisen">3, 7, 13, 19, 31, 37 …</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <p>
+    Notice 13 appears in both lists: it splits in <em>both</em> rings because 13 ≡ 1 (mod 4) and 13 ≡ 1 (mod 3),
+    i.e., 13 ≡ 1 (mod 12). The two conditions are independent specialisations of the Legendre symbol.
+  </p>
+</section>
+
+<div class="pullquote" data-anim>
+  Representability: splitting. Primitivity: ramification.<br>
+  The same two principles, in both rings.
+</div>
+
+<!-- ═══════ FOOTER ═══════ -->
+<footer>
+  <p>
+    Based on: <em>Eisenstein-Pythagorean Triples: A Parity Classification on the Hexagonal Lattice</em>
+    — Lee McCulloch-James, Dwight School London, February 2026.
+  </p>
+  <p style="margin-top:0.5rem">
+    Interactive tools:
+    <a href="https://leelemacjames.github.io/eisensteinPythagoreanTriple/" target="_blank">Triple Explorer</a> ·
+    <a href="https://leelemacjames.github.io/gaussianEisensteinEllipse/" target="_blank">Ellipse Explorer</a>
+  </p>
+  <p style="margin-top:0.5rem">
+    Built on the parity theory of Hadi, Isnaini, Wijayanti & Ezerman (2025).
+  </p>
+</footer>
+
+<script>
+// ═══════════════════════════════════════
+// UTILITY
+// ═══════════════════════════════════════
+function gcd(a, b) { a = Math.abs(a); b = Math.abs(b); while (b) { [a, b] = [b, a % b]; } return a; }
+
+function eisTriple(m, n) {
+  const a = m * m - n * n;
+  const b = n * (2 * m - n);
+  const c = m * m - m * n + n * n;
+  const g = gcd(gcd(Math.abs(a), Math.abs(b)), Math.abs(c));
+  const modClass = ((m + n) % 3 + 3) % 3;
+  let cls;
+  if (modClass === 0) cls = 'ntrim';
+  else if (m > 2 * n) cls = 'ctrim';
+  else if (m < 2 * n) cls = 'conj';
+  else cls = 'ntrim'; // m = 2n boundary
+  return { a, b, c, g, modClass, cls, m, n };
+}
+
+// ═══════════════════════════════════════
+// TRIPLE EXPLORER
+// ═══════════════════════════════════════
+const mSlider = document.getElementById('mSlider');
+const nSlider = document.getElementById('nSlider');
+const mVal = document.getElementById('mVal');
+const nVal = document.getElementById('nVal');
+const tripleResult = document.getElementById('tripleResult');
+const coprimeWarning = document.getElementById('coprimeWarning');
+
+function updateExplorer() {
+  const m = +mSlider.value;
+  let n = +nSlider.value;
+  nSlider.max = m - 1;
+  if (n >= m) { n = m - 1; nSlider.value = n; }
+  mVal.textContent = m;
+  nVal.textContent = n;
+
+  const g = gcd(m, n);
+  coprimeWarning.style.display = g !== 1 ? 'flex' : 'none';
+
+  const t = eisTriple(m, n);
+  const clsLabel = t.cls === 'ctrim' ? 'CANONICAL' : t.cls === 'conj' ? 'CONJUGATE' : 'NON-PRIMITIVE';
+  const clsBadge = `badge-${t.cls}`;
+
+  // Conjugate pair
+  const mc = m, nc = m - n;
+  const tc = eisTriple(mc, nc);
+
+  tripleResult.innerHTML = `
+    <div class="triple-card">
+      <div class="triple-label">Triple (a, b, c)</div>
+      <div class="triple-val" style="color:var(--cyan)">(${t.a}, ${t.b}, ${t.c})</div>
+      <div class="triple-sub">a² − ab + b² = ${t.a*t.a - t.a*t.b + t.b*t.b}</div>
+    </div>
+    <div class="triple-card">
+      <div class="triple-label">Classification</div>
+      <div class="triple-val"><span class="badge ${clsBadge}">${clsLabel}</span></div>
+      <div class="triple-sub">(m+n) mod 3 = ${t.modClass}</div>
+    </div>
+    <div class="triple-card">
+      <div class="triple-label">gcd(a, b, c)</div>
+      <div class="triple-val" style="color:${t.g === 1 ? 'var(--emerald)' : 'var(--rose)'}">${t.g}</div>
+      <div class="triple-sub">${t.g === 1 ? 'primitive' : 'divisible by 3'}</div>
+    </div>
+    <div class="triple-card">
+      <div class="triple-label">Conjugate</div>
+      <div class="triple-val" style="color:var(--violet)">(${tc.a}, ${tc.b}, ${tc.c})</div>
+      <div class="triple-sub">from (${mc}, ${nc})</div>
+    </div>
+    <div class="triple-card">
+      <div class="triple-label">Generator γ</div>
+      <div class="triple-val" style="color:var(--teal)">${m} + ${n}ω</div>
+      <div class="triple-sub">N(γ) = ${t.c}</div>
+    </div>
+    <div class="triple-card">
+      <div class="triple-label">Parity</div>
+      <div class="triple-val" style="color:${t.modClass === 0 ? 'var(--rose)' : 'var(--emerald)'}">
+        ${t.modClass === 0 ? 'Even' : 'Odd-' + t.modClass}
+      </div>
+      <div class="triple-sub">γ mod β</div>
+    </div>`;
+}
+
+mSlider.addEventListener('input', updateExplorer);
+nSlider.addEventListener('input', updateExplorer);
+
+// ═══════════════════════════════════════
+// PARAMETER SIEVE GRID
+// ═══════════════════════════════════════
+function buildSieve() {
+  const maxM = 16;
+  const container = document.getElementById('sieveContainer');
+
+  // Header row
+  let html = '<div style="font-family:var(--mono);font-size:0.7rem;color:var(--text-muted);text-align:center;margin-bottom:0.5rem">m → (rows) &nbsp; n → (columns) &nbsp; Hover for triple</div>';
+  html += '<div class="sieve-grid" style="grid-template-columns: 28px repeat(' + (maxM - 1) + ', 28px)">';
+
+  // Column headers
+  html += '<div style="font-size:0.55rem;color:var(--text-muted);display:flex;align-items:center;justify-content:center">m\\n</div>';
+  for (let n = 1; n < maxM; n++) {
+    html += `<div style="font-size:0.55rem;color:var(--text-muted);display:flex;align-items:center;justify-content:center">${n}</div>`;
+  }
+
+  for (let m = 2; m <= maxM; m++) {
+    // Row header
+    html += `<div style="font-size:0.55rem;color:var(--text-muted);display:flex;align-items:center;justify-content:center">${m}</div>`;
+    for (let n = 1; n < maxM; n++) {
+      if (n >= m) {
+        html += '<div class="sieve-cell invalid"></div>';
+      } else if (gcd(m, n) !== 1) {
+        html += `<div class="sieve-cell invalid" title="(${m},${n}) gcd≠1"></div>`;
+      } else {
+        const t = eisTriple(m, n);
+        html += `<div class="sieve-cell ${t.cls}" title="(${m},${n})→(${t.a},${t.b},${t.c}) ${t.cls}">${m}</div>`;
+      }
+    }
+  }
+  html += '</div>';
+  container.innerHTML = html;
+}
+
+// ═══════════════════════════════════════
+// CLASSIFICATION TABLE
+// ═══════════════════════════════════════
+function buildClassTable() {
+  const triples = [];
+  for (let m = 2; m <= 12; m++) {
+    for (let n = 1; n < m; n++) {
+      if (gcd(m, n) !== 1) continue;
+      triples.push(eisTriple(m, n));
+    }
+  }
+
+  // Sort: ntrim first, then ctrim, then conj, within each by c then a
+  const order = { ntrim: 0, ctrim: 1, conj: 2 };
+  triples.sort((a, b) => order[a.cls] - order[b.cls] || a.c - b.c || a.a - b.a);
+
+  let html = '<div class="data-table-wrap"><table class="data-table"><thead><tr>';
+  html += '<th>m</th><th>n</th><th>a</th><th>b</th><th>c</th><th>m+n</th><th>Class</th><th>gcd</th>';
+  html += '</tr></thead><tbody>';
+
+  let lastCls = '';
+  for (const t of triples.slice(0, 24)) {
+    if (t.cls !== lastCls) {
+      lastCls = t.cls;
+    }
+    const clsColor = t.cls === 'ctrim' ? 'var(--cyan)' : t.cls === 'conj' ? 'var(--violet)' : 'var(--rose)';
+    const clsName = t.cls === 'ctrim' ? 'ctrim' : t.cls === 'conj' ? 'conjugate' : 'ntrim';
+    html += `<tr>
+      <td>${t.m}</td><td>${t.n}</td>
+      <td style="color:${clsColor}">${t.a}</td>
+      <td style="color:${clsColor}">${t.b}</td>
+      <td style="color:var(--text-dim)">${t.c}</td>
+      <td style="color:${t.modClass === 0 ? 'var(--rose)' : 'var(--emerald)'}">${t.m + t.n}</td>
+      <td><span class="badge badge-${t.cls}">${clsName}</span></td>
+      <td style="color:${t.g === 1 ? 'var(--emerald)' : 'var(--rose)'}">${t.g}</td>
+    </tr>`;
+  }
+  html += '</tbody></table></div>';
+  document.getElementById('classTable').innerHTML = html;
+}
+
+// ═══════════════════════════════════════
+// HEXAGONAL LATTICE / ELLIPSE CANVAS
+// ═══════════════════════════════════════
+function drawHexEllipse() {
+  const canvas = document.getElementById('hexCanvas');
+  const dpr = window.devicePixelRatio || 1;
+  const rect = canvas.getBoundingClientRect();
+  canvas.width = rect.width * dpr;
+  canvas.height = rect.height * dpr;
+  const ctx = canvas.getContext('2d');
+  ctx.scale(dpr, dpr);
+  const W = rect.width, H = rect.height;
+  const cx = W / 2, cy = H / 2;
+  const scale = Math.min(W, H) * 0.38;
+
+  ctx.clearRect(0, 0, W, H);
+
+  // Draw ellipse X² - XY + Y² = 1 parametrically
+  // Using parametric form with angle
+  ctx.beginPath();
+  ctx.strokeStyle = 'rgba(34,211,238,0.2)';
+  ctx.lineWidth = 1;
+  for (let i = 0; i <= 360; i++) {
+    const t = (i / 360) * 2 * Math.PI;
+    // Parametrise X² - XY + Y² = 1 via principal axes.
+    // Matrix E = [[1,-1/2],[-1/2,1]], eigenvalues λ₁=1/2 (eigvec (1,1)/√2), λ₂=3/2 (eigvec (1,-1)/√2).
+    // Semi-axis lengths: √(1/λ₁) = √2 along (1,1), √(1/λ₂) = √(2/3) along (1,-1).
+    // In rotated frame: u = √2 cos(t), v = √(2/3) sin(t)
+    // Rotate back: X = (u + v)/√2, Y = (u - v)/√2
+    const u = Math.sqrt(2) * Math.cos(t);
+    const v = Math.sqrt(2 / 3) * Math.sin(t);
+    const X = (u + v) / Math.sqrt(2);
+    const Y = (u - v) / Math.sqrt(2);
+    const px = cx + X * scale;
+    const py = cy - Y * scale;
+    i === 0 ? ctx.moveTo(px, py) : ctx.lineTo(px, py);
+  }
+  ctx.closePath();
+  ctx.stroke();
+
+  // Fill lightly
+  ctx.fillStyle = 'rgba(34,211,238,0.03)';
+  ctx.fill();
+
+  // The six images of (8,5)/7
+  const pts = [
+    [8, 5], [-5, 3], [-3, -8], [-8, -5], [5, -3], [3, 8]
+  ];
+  const c = 7;
+  const colors = ['#22d3ee', '#2dd4bf', '#34d399', '#22d3ee', '#2dd4bf', '#34d399'];
+
+  // Draw connecting hexagon
+  ctx.beginPath();
+  ctx.strokeStyle = 'rgba(45,212,191,0.15)';
+  ctx.lineWidth = 1;
+  pts.forEach(([a, b], i) => {
+    const px = cx + (a / c) * scale;
+    const py = cy - (b / c) * scale;
+    i === 0 ? ctx.moveTo(px, py) : ctx.lineTo(px, py);
+  });
+  ctx.closePath();
+  ctx.stroke();
+
+  // Draw points and labels
+  pts.forEach(([a, b], i) => {
+    const px = cx + (a / c) * scale;
+    const py = cy - (b / c) * scale;
+
+    // Glow
+    const grad = ctx.createRadialGradient(px, py, 0, px, py, 12);
+    grad.addColorStop(0, 'rgba(34,211,238,0.3)');
+    grad.addColorStop(1, 'transparent');
+    ctx.fillStyle = grad;
+    ctx.fillRect(px - 12, py - 12, 24, 24);
+
+    // Dot
+    ctx.beginPath();
+    ctx.arc(px, py, 4, 0, Math.PI * 2);
+    ctx.fillStyle = colors[i];
+    ctx.fill();
+
+    // Label
+    ctx.fillStyle = 'rgba(220,232,227,0.7)';
+    ctx.font = '11px Fira Code, monospace';
+    ctx.textAlign = 'center';
+    const offsetY = b > 0 ? -12 : 16;
+    ctx.fillText(`(${a},${b})`, px, py + offsetY);
+  });
+
+  // Axes
+  ctx.strokeStyle = 'rgba(94,125,112,0.2)';
+  ctx.lineWidth = 0.5;
+  ctx.beginPath();
+  ctx.moveTo(cx - scale * 1.5, cy);
+  ctx.lineTo(cx + scale * 1.5, cy);
+  ctx.moveTo(cx, cy - scale * 1.5);
+  ctx.lineTo(cx, cy + scale * 1.5);
+  ctx.stroke();
+
+  // Axis labels
+  ctx.fillStyle = 'var(--text-muted)';
+  ctx.font = '12px Fira Code, monospace';
+  ctx.textAlign = 'center';
+  ctx.fillText('X', cx + scale * 1.5 + 15, cy + 4);
+  ctx.fillText('Y', cx + 4, cy - scale * 1.5 + 15);
+
+  // Title
+  ctx.fillStyle = 'rgba(220,232,227,0.5)';
+  ctx.font = '12px IBM Plex Sans, sans-serif';
+  ctx.textAlign = 'left';
+  ctx.fillText('X² − XY + Y² = 1', 16, 24);
+  ctx.fillText('c = 7', 16, 42);
+}
+
+// ═══════════════════════════════════════
+// HERO HEX BACKGROUND
+// ═══════════════════════════════════════
+function buildHexBg() {
+  const container = document.getElementById('hexBg');
+  const size = 30;
+  const h = size * Math.sqrt(3);
+  let svg = `<svg xmlns="http://www.w3.org/2000/svg" width="100%" height="100%">
+    <defs><pattern id="hexPattern" width="${size * 3}" height="${h}" patternUnits="userSpaceOnUse">
+      <polygon points="${hexPoints(size * 0.5, h * 0.5, size * 0.4)}" fill="none" stroke="currentColor" stroke-width="0.5"/>
+      <polygon points="${hexPoints(size * 2, h * 0.5, size * 0.4)}" fill="none" stroke="currentColor" stroke-width="0.5"/>
+      <polygon points="${hexPoints(size * 1.25, h * 0.05, size * 0.4)}" fill="none" stroke="currentColor" stroke-width="0.5"/>
+    </pattern></defs>
+    <rect width="100%" height="100%" fill="url(#hexPattern)"/>
+  </svg>`;
+  container.innerHTML = svg;
+}
+
+function hexPoints(cx, cy, r) {
+  const pts = [];
+  for (let i = 0; i < 6; i++) {
+    const angle = Math.PI / 3 * i - Math.PI / 6;
+    pts.push(`${cx + r * Math.cos(angle)},${cy + r * Math.sin(angle)}`);
+  }
+  return pts.join(' ');
+}
+
+// ═══════════════════════════════════════
+// SCROLL ANIMATIONS
+// ═══════════════════════════════════════
+const sectionObs = new IntersectionObserver(entries => {
+  entries.forEach(e => { if (e.isIntersecting) e.target.classList.add('visible'); });
+}, { threshold: 0.12 });
+
+const cardObs = new IntersectionObserver(entries => {
+  entries.forEach(e => { if (e.isIntersecting) e.target.classList.add('revealed'); });
+}, { threshold: 0.2 });
+
+// ═══════════════════════════════════════
+// INIT
+// ═══════════════════════════════════════
+window.addEventListener('load', () => {
+  buildHexBg();
+  updateExplorer();
+  buildSieve();
+  buildClassTable();
+  drawHexEllipse();
+
+  document.querySelectorAll('[data-anim]').forEach(el => sectionObs.observe(el));
+  document.querySelectorAll('[data-reveal]').forEach(el => cardObs.observe(el));
+  document.querySelectorAll('[data-reveal-card]').forEach(el => cardObs.observe(el));
+});
+
+window.addEventListener('resize', drawHexEllipse);
+</script>
+</body>
+</html>
